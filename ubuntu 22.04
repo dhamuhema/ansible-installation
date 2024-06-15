@@ -1,0 +1,71 @@
+To update and upgrade the latest ubuntu version
+   apt update
+  apt upgrade -y
+
+Ansible ppa get latest version
+   apt install software-properties-common
+  add-apt-repository --yes --update ppa:ansible/ansible
+
+To install ansible
+  apt install ansible -y 
+
+To check version
+   ansible --version
+  
+  createing local config dic
+    mkdir -p ~/ansible/config
+
+disableing default config
+  ansible-config init -t all --disabled > ansible.cfg
+ 
+  editing default config with remote server detail
+   vi ~/ansible/config/ansible.cfg
+     inventory = ~/ansible/config/hosts
+     remote_user = master
+     host_key_checking = False
+ 
+editing default config with route server detail
+     vi ~/ansible/config/hosts
+    [agents]
+    18.209.9.10 agent_user=root 
+ ssh key generation
+     ssh-keygen -t rsa -b 2048
+      cat /root/.ssh/id_rsa.pub (it generate the key copy and paste)
+      in cd /root/.ssh/
+      vi authorized_keys & paste key here in agent side
+
+ 
+   17  ls
+   18  cd /root/.ssh/
+   19  ls
+   20  cat id_rsa.pub
+   21  ansible agents -m ping
+   22  /etc/ansible
+   23  cd /etc/ansible
+   24  ll
+   25  vi hosts
+   26  ansible agents -m ping
+   27  ansibe agents -m apt -a "name=nginx state=present"
+   28  ansble agents -m apt -a "name=nginx state=present"
+   29  ansible agents -m apt -a "name=nginx state=present"
+   30  ansible agents -m service -a "name=nginx state=started"
+   31  cd /root/.ssh
+   32  ll
+   33  cat id_rsa
+   34  ll
+   35  cat id_rsa.pub
+   36  vi authorized_keys
+   37  cd /etc/ansible/
+   38  ll
+   39  vi hosts
+   40  ansible all -m ping
+   41  ansible master -m apt -a "name=git state=present"
+   42  git --version
+   43  cd /opt/
+   44  ls
+   45  touch dhamu
+   46  ls
+   47  ansible all -m copy -a "src:/opt/dhamu dest:/opt/dhamu"
+   48  ansible agents -m copy -a "src:/opt/dhamu dest:/opt/dhamu"
+   49  ansible agents -m copy -a "src=/opt/dhamu dest=/opt/dhamu"
+   50  history
