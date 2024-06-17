@@ -29,7 +29,7 @@ editing default config with route server detail
     [agents]
     18.209.9.10 agent_user=root 
  ssh key generation
-     ssh-keygen -t rsa -b 2048
+     ssh-keygen
       cat /root/.ssh/id_rsa.pub (it generate the key copy and paste)
       in cd /root/.ssh/
       vi authorized_keys & paste key here in agent side
