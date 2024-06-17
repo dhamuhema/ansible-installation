@@ -1,1 +1,6 @@
-
+yum install epel-release
+yum install ansible pip -y
+ssh-keygen
+cat id_rsa.pub
+copy the publickey paste it in authorized_key in agent
+paste agent public ip in master hostfile
