@@ -1,0 +1,21 @@
+ apt update
+ apt install default-jdk -y
+# checking java version (11.0)
+java -version
+# downloading maven 3.9.6   
+ wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+ # tar to exact the file
+ sudo tar xf /tmp/apache-maven-*.tar.gz -C /opt
+ sudo ln -s /opt/apache-maven-3.9.6 /opt/maven
+ 
+vi /etc/profile.d/maven.sh
+   export JAVA_HOME=/usr/lib/jvm/default-java
+   export M2_HOME=/opt/maven
+   export MAVEN_HOME=/opt/maven
+   export PATH=${M2_HOME}/bin:${PATH}
+ # provideing permission
+   chmod +x /etc/profile.d/maven.sh
+   source /etc/profile.d/maven.sh
+ # command to check maven version
+   mvn --version
+  
