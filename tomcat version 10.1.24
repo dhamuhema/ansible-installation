@@ -13,14 +13,11 @@ sudo sh -c 'chmod +x /opt/tomcat/bin/*.sh'
 #tomcat
 vi /opt/tomcat/conf/tomcat-users.xml
 
-
-		<!-- user manager can access only the manager section -->
-		<role rolename="manager-gui" />
-		<user username="manager" password="admin" roles="manager-gui" />
-
-		<!-- user admin can access manager and admin section both -->
-		<role rolename="admin-gui" />
-		<user username="admin" password="admin" roles="manager-gui,admin-gui" />
+<role rolename="manager-gui"/>
+<role rolename="manager-script"/>
+<role rolename="manager-jmx"/>
+<role rolename="manager-status"/>   
+<user username="admin" password="admin" roles="manager-gui,manager-script,manager-jmx,manager-status"/>
 
 
  vi /opt/tomcat/webapps/manager/META-INF/context.xml
