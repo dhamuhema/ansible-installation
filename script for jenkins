@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    tools{
+        jdk 'jdk17'
+        maven 'maven'
+    }
+
+    stages {
+        stage('git checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/knowledgemateit/Maven-Tomcat-Nexus-Sonar-Setup.git'
+            }
+        }
+        stage('maven compile') {
+            steps {
+                sh "mvn clean compile"
+            }
+        }
+        stage('maven package') {
+            steps {
+                sh "mvn clean package"
+            }
+        }
+        stage('deploy tomcat') {
+            steps {
+                sh "-s cp /target/.war /opt/tomcat/webapps"
+            }
+        }
+    }
+}
