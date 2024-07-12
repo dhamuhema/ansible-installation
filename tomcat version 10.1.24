@@ -7,7 +7,7 @@ wget https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.24/bin/apache-tomcat
 sudo tar xzf apache-tomcat-10.1.24.tar.gz -C /opt/tomcat --strip-components=1
 sudo groupadd apache-tomcat-10.1.24
 sudo useradd -s /bin/false -g apache-tomcat-10.1.24 -d /opt/apache-tomcat-10.1.24 apache-tomcat-10.1.24
-sudo chown -R apache-tomcat-10.1.24: /opt/apache-tomcat-10.1.24
+chown -R apache-tomcat-10.1.24: /opt/apache-tomcat-10.1.24
 sudo sh -c 'chmod +x /opt/apache-tomcat-10.1.24/bin/*.sh' 
 
 
