@@ -4,26 +4,43 @@ pipeline {
         jdk 'jdk17'
         maven 'maven'
     }
-
+    environment{
+        SCANNER_HOME= tool 'sonar-scanner'
+    }
     stages {
-        stage('git checkout') {
+        stage('Git Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/jaiswaladi246/Petclinic.git'
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/dhamuhema/Petclinic.git'
             }
         }
-        stage('maven compile') {
+        stage('Maven Compile') {
             steps {
-                sh "mvn clean compile"
+                sh 'mvn clean compile'
             }
         }
-        stage('maven package') {
+        stage('Maven Test') {
             steps {
-                sh "mvn clean package"
+                sh 'mvn test'
             }
         }
-        stage('deploy tomcat') {
+        stage('Sonarqube Analysis') {
             steps {
-               deploy adapters: [tomcat9(credentialsId: 'tomcat_user', path: '', url: 'http://3.87.240.53:8080/')], contextPath: '/opt/tomcat/webapps', war: '/target/petclinic.war'
+                withSonarQubeEnv('sonar-server') {
+                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
+                     -Dsonar.java.binaries=. \
+                     -Dsonar.projectKey=Petclinic '''
+                }
+                
+            }
+        }
+        stage('Maven Package') {
+            steps {
+                sh 'mvn package'
+            }
+        }
+         stage('Deploy To Tomcat') {
+            steps {
+                deploy adapters: [tomcat9(credentialsId: '0f976b60-16a3-45cb-9c5b-3ca334d8f070', path: '', url: 'http://52.207.100.232:8089/')], contextPath: 'petclinic', war: '**/*war'
             }
         }
     }
