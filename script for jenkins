@@ -5,7 +5,7 @@ pipeline {
         maven 'maven'
     }
     environment{
-        SCANNER_HOME=tool ('sonar-scanner')
+        SCANNER_HOME= tool ('sonar-scanner')
     }
 
     stages {
@@ -14,7 +14,7 @@ pipeline {
                 git branch: 'main', changelog: false, poll: false, url: 'https://github.com/dhamuhema/Maven-Tomcat-Nexus-Sonar-Setup.git'
             }
         }
-        stage('Maven Compile') {
+        stage('Maven Clean Compile') {
             steps {
                 sh "mvn clean compile"
             }
@@ -24,30 +24,36 @@ pipeline {
                 sh "mvn test"
             }
         }
-        stage('Sonarqube Analysis') {
+         stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName:Maven-Tomcat-Nexus-Sonar-Setup \
+                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar-projectName=java-tomcat-maven-example \
                      -Dsonar.java.binaries=. \
-                     -Dsonar.projectKey=Maven-Tomcat-Nexus-Sonar-Setup '''
+                     -Dsonar.projectKey=java-tomcat-maven-example '''
                 }
             }
         }
-        stage('Maven Package') {
+         stage('Maven Package') {
             steps {
                 sh "mvn package"
             }
         }
-        stage('OWASP Dependency Check') {
+        stage('OWASP DependencyCheck') {
             steps {
                 dependencyCheck additionalArguments: '--scan target/', odcInstallation: 'owasp'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
-        stage('Deploy Tomcat') {
+        stage('Maven Deploy to Nexus') {
             steps {
-               deploy adapters: [tomcat9(credentialsId: '8830e487-6030-47f9-8a87-e5b5c06cd5dc', path: '', url: 'http://3.90.190.138:8089/')], contextPath: 'Maven-Tomcat-Nexus-Sonar-Setup', war: '**/*war' 
-                
+                configFileProvider([configFile(fileId: 'f6b6e41a-fe41-4054-9b48-06a5a6a3fdce', targetLocation: 'maven-releases', variable: 'mavensettings')]) {
+                    sh "mvn -s $mavensettings clean deploy -DskipTests=true"
+                }
+            }
+        }
+        stage('Deploy To Tomcat') {
+            steps {
+                deploy adapters: [tomcat9(credentialsId: 'ca42953d-cafb-4cb5-b053-637047c3c2a6', path: '', url: 'http://54.242.0.207:8089/')], contextPath: 'java-tomcat-maven-example', war: '**/*war' 
             }
         }
     }
