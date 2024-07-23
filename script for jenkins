@@ -9,12 +9,12 @@ pipeline {
     }
 
     stages {
-        stage('Git Checkout') {
+        stage('Git Check') {
             steps {
                 git branch: 'main', changelog: false, poll: false, url: 'https://github.com/dhamuhema/Maven-Tomcat-Nexus-Sonar-Setup.git'
             }
         }
-        stage('Maven Clean Compile') {
+         stage('Maven Clean Compile') {
             steps {
                 sh "mvn clean compile"
             }
@@ -27,33 +27,31 @@ pipeline {
          stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar-projectName=java-tomcat-maven-example \
+                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.ProjectName=Maven-Tomcat-Nexus-Sonar-Setup \
                      -Dsonar.java.binaries=. \
-                     -Dsonar.projectKey=java-tomcat-maven-example '''
+                     -Dsonar.projectKey=Maven-Tomcat-Nexus-Sonar-Setup '''
                 }
             }
         }
-         stage('Maven Package') {
+        stage('Maven Package') {
             steps {
                 sh "mvn package"
             }
         }
-        stage('OWASP DependencyCheck') {
+        stage('owasp Dependency Check') {
             steps {
                 dependencyCheck additionalArguments: '--scan target/', odcInstallation: 'owasp'
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                dependencyCheckPublisher pattern: '**\\dependency-check-report.xml'
             }
         }
-        stage('Maven Deploy to Nexus') {
+        stage('Deploy To Nexus') {
             steps {
-                configFileProvider([configFile(fileId: 'f6b6e41a-fe41-4054-9b48-06a5a6a3fdce', targetLocation: 'maven-releases', variable: 'mavensettings')]) {
-                    sh "mvn -s $mavensettings clean deploy -DskipTests=true"
-                }
+               nexusArtifactUploader artifacts: [[artifactId: 'mavenreleasearitifactid', classifier: '', file: 'target/java-tomcat-maven-example.war', type: 'war']], credentialsId: 'nexusrepository', groupId: 'com.maven-releases.app', nexusUrl: '3.80.120.177:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-releases', version: '2.1.2-maven-releases'   
             }
         }
-        stage('Deploy To Tomcat') {
+        stage('Deploy to Tomcat') {
             steps {
-                deploy adapters: [tomcat9(credentialsId: 'ca42953d-cafb-4cb5-b053-637047c3c2a6', path: '', url: 'http://54.242.0.207:8089/')], contextPath: 'java-tomcat-maven-example', war: '**/*war' 
+                deploy adapters: [tomcat9(credentialsId: '522a3304-0cc1-40cb-8844-14908b1410c5', path: '', url: 'http://3.80.120.177:8089/')], contextPath: 'Maven-Tomcat-Nexus-Sonar-Setup', war: '**/*.war'
             }
         }
     }
