@@ -9,12 +9,12 @@ pipeline {
     }
 
     stages {
-        stage('Git Check') {
+        stage('Git Checkout') {
             steps {
-                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/dhamuhema/Maven-Tomcat-Nexus-Sonar-Setup.git'
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/jaiswaladi246/Petclinic.git'
             }
         }
-         stage('Maven Clean Compile') {
+        stage('Maven Clean Compile') {
             steps {
                 sh "mvn clean compile"
             }
@@ -24,12 +24,11 @@ pipeline {
                 sh "mvn test"
             }
         }
-         stage('Sonarqube Analysis') {
+        stage('Sonarqube Analysis') {
             steps {
                 withSonarQubeEnv('sonar-server') {
-                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.ProjectName=Maven-Tomcat-Nexus-Sonar-Setup \
-                     -Dsonar.java.binaries=. \
-                     -Dsonar.projectKey=Maven-Tomcat-Nexus-Sonar-Setup '''
+                     sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.ProjectName=petclinic \
+                     -Dsonar.java.binaries=. -Dsonar.projectKey=petclinic '''
                 }
             }
         }
@@ -38,20 +37,42 @@ pipeline {
                 sh "mvn package"
             }
         }
-        stage('owasp Dependency Check') {
+        stage('OWASP Dependencycheck') {
             steps {
-                dependencyCheck additionalArguments: '--scan target/', odcInstallation: 'owasp'
+                dependencyCheck additionalArguments: '--scan target/', odcInstallation: 'OWASP'
                 dependencyCheckPublisher pattern: '**\\dependency-check-report.xml'
+            }
+        }
+        stage('Deploy To Tomcat') {
+            steps {
+                deploy adapters: [tomcat9(credentialsId: 'aa041a1d-d92f-4f90-8ea6-69611dde2133', path: '', url: 'http://54.234.207.206:8089/')], contextPath: 'petclinic', war: '**/*.war'
             }
         }
         stage('Deploy To Nexus') {
             steps {
-               nexusArtifactUploader artifacts: [[artifactId: 'mavenreleasearitifactid', classifier: '', file: 'target/java-tomcat-maven-example.war', type: 'war']], credentialsId: 'nexusrepository', groupId: 'com.maven-releases.app', nexusUrl: '3.80.120.177:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-releases', version: '2.1.2-maven-releases'   
+                nexusArtifactUploader artifacts: [[artifactId: 'maven-releasesartifactId', classifier: '', file: 'target/petclinic.war', type: 'war']], credentialsId: '1442abc8-8d40-43ac-b295-b3954c083952', groupId: 'com.maven-releases.app', nexusUrl: '54.234.207.206:8081/', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-releases', version: '2.1.2-maven-releases'
             }
         }
-        stage('Deploy to Tomcat') {
+        stage('Build Docker Image') {
             steps {
-                deploy adapters: [tomcat9(credentialsId: '522a3304-0cc1-40cb-8844-14908b1410c5', path: '', url: 'http://3.80.120.177:8089/')], contextPath: 'Maven-Tomcat-Nexus-Sonar-Setup', war: '**/*.war'
+                withDockerRegistry(credentialsId: 'b5bc9176-72d9-4d06-b193-43069d86acfc') {
+                     sh "docker build -t petclinic -f Dockerfile ."
+                     sh "docker tag petclinic dhamuhema/petclinic:latest"
+                }
+            }
+        }
+        stage('Push To Docker') {
+            steps {
+                withDockerRegistry(credentialsId: 'b5bc9176-72d9-4d06-b193-43069d86acfc') {
+                     sh "docker push dhamuhema/petclinic:latest"
+                }
+            }
+        }
+        stage('Docker Run Image ') {
+            steps {
+                withDockerRegistry(credentialsId: 'b5bc9176-72d9-4d06-b193-43069d86acfc') {
+                     sh "docker run -d --name petclinic -p 8082:8082 petclinic:latest"
+                }
             }
         }
     }
