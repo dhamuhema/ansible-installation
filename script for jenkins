@@ -45,33 +45,39 @@ pipeline {
         }
         stage('Deploy To Tomcat') {
             steps {
-                deploy adapters: [tomcat9(credentialsId: 'aa041a1d-d92f-4f90-8ea6-69611dde2133', path: '', url: 'http://54.234.207.206:8089/')], contextPath: 'petclinic', war: '**/*.war'
+                deploy adapters: [tomcat9(credentialsId: 'ae187846-f457-4beb-99f3-ab04088dee94', path: '', url: 'http://3.80.186.167:8089/')], contextPath: null, war: '**\\*.war'
             }
         }
         stage('Deploy To Nexus') {
             steps {
-                nexusArtifactUploader artifacts: [[artifactId: 'maven-releasesartifactId', classifier: '', file: 'target/petclinic.war', type: 'war']], credentialsId: '1442abc8-8d40-43ac-b295-b3954c083952', groupId: 'com.maven-releases.app', nexusUrl: '54.234.207.206:8081/', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-releases', version: '2.1.2-maven-releases'
+                nexusArtifactUploader artifacts: [[artifactId: 'maven-releasesartifactId', classifier: '', file: 'target/petclinic.war', type: 'war']], credentialsId: 'f998c257-d0b5-4b25-90c9-3363b665e53f', groupId: 'com.maven-releases.app', nexusUrl: '3.80.186.167:8081/', nexusVersion: 'nexus3', protocol: 'http', repository: 'maven-releases', version: '2.1.2-maven-releases'
             }
         }
-        stage('Build Docker Image') {
+        stage('Build Image') {
             steps {
-                withDockerRegistry(credentialsId: 'b5bc9176-72d9-4d06-b193-43069d86acfc') {
-                     sh "docker build -t petclinic -f Dockerfile ."
-                     sh "docker tag petclinic dhamuhema/petclinic:latest"
+                script{
+                    withDockerRegistry(credentialsId: '1148837e-a579-4c77-8d36-f8d27060b948') {
+                         sh "docker build -t petclinic -f Dockerfile ."
+                         sh "docker tag petclinic dhamuhema/petclinic:latest"
+                    }
                 }
             }
         }
-        stage('Push To Docker') {
+        stage('Docker push') {
             steps {
-                withDockerRegistry(credentialsId: 'b5bc9176-72d9-4d06-b193-43069d86acfc') {
-                     sh "docker push dhamuhema/petclinic:latest"
+                script{
+                    withDockerRegistry(credentialsId: '1148837e-a579-4c77-8d36-f8d27060b948') {
+                         sh "docker push dhamuhema/petclinic:latest"
+                    }
                 }
             }
         }
-        stage('Docker Run Image ') {
+        stage('Docker Run') {
             steps {
-                withDockerRegistry(credentialsId: 'b5bc9176-72d9-4d06-b193-43069d86acfc') {
-                     sh "docker run -d --name petclinic -p 8082:8082 petclinic:latest"
+                script{
+                    withDockerRegistry(credentialsId: '1148837e-a579-4c77-8d36-f8d27060b948') {
+                        sh "docker run -d --name petclinic -p 8082:8082 dhamuhema/petclinic:latest"
+                    }
                 }
             }
         }
